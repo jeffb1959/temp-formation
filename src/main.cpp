@@ -2,7 +2,7 @@
 
 #include "DS18B20Sensor.h"
 
-constexpr uint8_t kSensorPin = 6;  // D5
+constexpr uint8_t kSensorPin = D5;  // D5 / GPIO6
 constexpr unsigned long kReadIntervalMs = 5000;
 
 DS18B20Sensor temperatureSensor(kSensorPin);

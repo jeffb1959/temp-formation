@@ -122,8 +122,15 @@ Ici la difference:
   - `SENSOR_TYPE = "DS18B20"`
   - `WARNING_THRESHOLD_C = 30.0`
   - `CRITICAL_THRESHOLD_C = 60.0`
-  - `READING_INTERVAL_MS = 10000`
   - `READING_INTERVAL_S = 10`
+  - `READING_INTERVAL_MS = READING_INTERVAL_S * 1000`
+- `DeviceConfig.h` est maintenant documenté pour la formation: chaque constante a un commentaire clair (usage, contenu attendu, exemples quand c’est utile).
+- Principe d’une seule source de vérité pour la cadence:
+  - `READING_INTERVAL_S` est la valeur à modifier pour la formation.
+  - `READING_INTERVAL_MS` est recalculée automatiquement en interne.
+  - Le programme utilise `READING_INTERVAL_MS` avec `millis()`.
+  - Le JSON continue d’exposer `reading_interval_s`.
+  - Cela évite d'avoir deux valeurs qui divergent.
 - Centralisation utile pour préparer un projet multi-équipement plus tard: chaque module peut partager la même architecture logicielle avec une configuration propre (identité, capteur, seuils, cadence).
 - Aucun comportement fonctionnel n’a été changé:
   - la télémétrie JSON continue d’exposer `device_id`, `device_name`, `sensor_type` et `reading_interval_s`,

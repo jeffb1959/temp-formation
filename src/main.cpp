@@ -2,11 +2,13 @@
 
 #include "DS18B20Sensor.h"
 #include "LocalDisplay.h"
+#include "TemperatureStatus.h"
 
 constexpr uint8_t kSensorPin = D5;  // D5 / GPIO6
 constexpr unsigned long kReadIntervalMs = 10000;
 
 DS18B20Sensor temperatureSensor(kSensorPin);
+TemperatureStatus localStatus;
 LocalDisplay localDisplay;
 bool sensorFound = false;
 bool displayReady = false;
@@ -18,24 +20,25 @@ void setup() {
     delay(10);
   }
 
-  Serial.println("\n=== Démarrage du programme ===");
-  Serial.print("GPIO utilisé pour le DS18B20: ");
+  Serial.println("\n=== Demarrage du programme ===");
+  Serial.print("GPIO utilise pour le DS18B20: ");
   Serial.println(temperatureSensor.getPin());
 
   Serial.println("Initialisation du capteur DS18B20...");
   sensorFound = temperatureSensor.begin();
   if (!sensorFound) {
-    Serial.println("Erreur: aucune sonde DS18B20 détectée.");
-    Serial.println("Vérifie le câblage, la résistance de 4.7k entre DATA et 3.3V, puis réessaie.");
+    Serial.println("Erreur: aucune sonde DS18B20 detectee.");
+    Serial.println(
+        "Verifie le cablage, la resistance de 4.7k entre DATA et 3.3V, puis reessaie.");
   } else {
-    Serial.println("Capteur DS18B20 détecté et initialisé.");
+    Serial.println("Capteur DS18B20 detecte et initialise.");
   }
 
   displayReady = localDisplay.begin();
   if (!displayReady) {
     Serial.println("Erreur: e-paper non disponible.");
   } else {
-    Serial.println("Ecran e-paper prêt.");
+    Serial.println("Ecran e-paper pret.");
   }
 }
 
@@ -50,18 +53,23 @@ void loop() {
     lastReadMs = now;
 
     float temperatureC = 0.0f;
+    TemperatureStatusCode status;
     if (temperatureSensor.readTemperature(temperatureC)) {
-      Serial.print("Température lue: ");
+      status = localStatus.evaluate(temperatureC, true);
+      Serial.print("Temperature lue: ");
       Serial.print(temperatureC);
-      Serial.println(" °C");
-      if (displayReady) {
-        localDisplay.showReading(temperatureC, true);
-      }
+      Serial.println(" C");
     } else {
-      Serial.println("Erreur: sonde non lue (déconnexion, mauvais câblage ou perte de contact).");
-      if (displayReady) {
-        localDisplay.showReading(0.0f, false);
-      }
+      status = localStatus.evaluate(0.0f, false);
+      Serial.println(
+          "Erreur: sonde non lue (deconnexion, mauvais cablage ou perte de contact).");
+    }
+
+    Serial.print("Etat local: ");
+    Serial.println(TemperatureStatus::toString(status));
+
+    if (displayReady) {
+      localDisplay.showReading(temperatureC, status);
     }
   }
 }

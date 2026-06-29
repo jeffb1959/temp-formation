@@ -17,7 +17,7 @@ L'approche se fait par petites phases testables.
   - temperature lue,
   - erreur si absence de sonde.
 
-## Phase 1.2 (en cours / validee)
+## Phase 1.2 (validee)
 
 - Ajout d'un module d'affichage local: `LocalDisplay`.
 - Ecran: e-paper monochrome 2.9" 296x128 en SPI.
@@ -104,11 +104,12 @@ Ici la difference:
 
 ## Version actuelle
 
-- `0.2.0` - Affichage e-paper de la temperature (2.9", 296x128).
+- `0.3.0` - Etat local de temperature (NORMAL/AVERTISSEMENT/CRITIQUE/ERREUR_SONDE) affiche sur e-paper.
 
 ## Historique des versions
 
 - `0.2.0` - Phase 1.2: affichage local e-paper 2.9" du capteur DS18B20 en plus du serie.
+- `0.3.0` - Phase 1.3: ajout logique locale de statut temperature pour test laboratoire.
 - `0.1.0` - Phase 1.1: lecture DS18B20 fonctionnelle sur D5.
 
 ### Diagnostic e-paper 1.2 (écran croisé)
@@ -138,6 +139,29 @@ Ici la difference:
   - textes `Memoire EE05`, `ePaper OK`, et `W/H`.
 - Succès: affichage texte + température validé sur écran 2.13" avec cette initialisation.
 - Retour au grand écran 2.9": même initialisation Boutons Mémoire (sans `SPI.begin`), modèle changé en `GxEPD2_290_GDEY029T94`.
+
+## Phase 1.3 - Etat local de temperature (laboratoire)
+
+- Nouveau module ajouté: `TemperatureStatus` (`TemperatureStatus.h` / `TemperatureStatus.cpp`).
+- Etats locaux affichés localement:
+  - `NORMAL`
+  - `AVERTISSEMENT`
+  - `CRITIQUE`
+  - `ERREUR_SONDE`
+- Seuils temporaires de test:
+  - avertissement: `30.0 C`
+  - critique: `60.0 C`
+- L’affichage e-paper affiche maintenant:
+  - nom equipement: `Prototype temp`
+  - temperature courante
+  - etat local
+  - seuil d’avertissement
+  - seuil critique
+- Intervalle de lecture conservé: `10 secondes`.
+- Pas de Wi-Fi, pas de ThingsBoard, pas de courriel, pas de logique de "3 lectures consecutives" dans cette phase.
+- Rappel important: les alarmes, actions et notifications officielles (dont ThingsBoard et e-mails) seront ajoutées dans une phase suivante.
+- Leçon apprise:
+  - valider d’abord l’écran avec un e-paper déjà connu (ex. Boutons Mémoire / `GxEPD2_213_GDEY0213B74`) pour isoler plus vite les causes.
 
 ## A verifier
 

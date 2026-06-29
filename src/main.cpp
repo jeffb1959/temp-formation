@@ -1,12 +1,15 @@
 #include <Arduino.h>
 
 #include "DS18B20Sensor.h"
+#include "LocalDisplay.h"
 
 constexpr uint8_t kSensorPin = D5;  // D5 / GPIO6
 constexpr unsigned long kReadIntervalMs = 5000;
 
 DS18B20Sensor temperatureSensor(kSensorPin);
+LocalDisplay localDisplay;
 bool sensorFound = false;
+bool displayReady = false;
 unsigned long lastReadMs = 0;
 
 void setup() {
@@ -27,6 +30,13 @@ void setup() {
   } else {
     Serial.println("Capteur DS18B20 détecté et initialisé.");
   }
+
+  displayReady = localDisplay.begin();
+  if (!displayReady) {
+    Serial.println("Erreur: e-paper non disponible.");
+  } else {
+    Serial.println("Ecran e-paper prêt.");
+  }
 }
 
 void loop() {
@@ -44,8 +54,14 @@ void loop() {
       Serial.print("Température lue: ");
       Serial.print(temperatureC);
       Serial.println(" °C");
+      if (displayReady) {
+        localDisplay.showReading(temperatureC, true);
+      }
     } else {
       Serial.println("Erreur: sonde non lue (déconnexion, mauvais câblage ou perte de contact).");
+      if (displayReady) {
+        localDisplay.showReading(0.0f, false);
+      }
     }
   }
 }

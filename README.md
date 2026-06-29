@@ -2,54 +2,124 @@
 
 ## Objectif du projet
 
-Ce projet permet d'apprendre pas à pas la lecture d'un capteur de temperature DS18B20 avec une carte ESP32 (XIAO ESP32-S3), en gardant un code simple et modulaire.
+Former pas a pas la lecture d'une temperature avec une carte ESP32 et un DS18B20, avec un code modulaire et tres simple a expliquer.
 
-L'idee de la phase 1.1 est d'avoir une base stable:
+L'approche se fait par petites phases testables.
 
-- un capteur DS18B20 lisible;
-- un code séparé en petit modules (`main.cpp` + un module `DS18B20Sensor`);
-- des logs serie clairs pour la formation.
+## Phase 1.1 (validee)
 
-## Phase 1.1 - Lecture DS18B20 fonctionnelle
+- DS18B20 lu correctement toutes les 5 secondes.
+- Pin capteur conservee: `D5` (`GPIO6`).
+- Affichage serie actif avec:
+  - demarrage du programme,
+  - initialisation du capteur,
+  - GPIO utilise,
+  - temperature lue,
+  - erreur si absence de sonde.
 
-La phase 1.1 est validée.
+## Phase 1.2 (en cours / validee)
 
-- Le capteur est installe sur breadboard.
-- Le capteur lit une temperature valide.
-- La temperature change quand la sonde est tenue dans la main (test manuelle).
-- La lecture est envoyee toutes les 5 secondes en serie.
-- Un message d'erreur est affiche si la sonde n'est pas detectee.
+- Ajout d'un module d'affichage local: `LocalDisplay`.
+- Ecran: e-paper monochrome 2.9" 296x128 en SPI.
+- Le module affiche au minimum:
+  - titre: `Formation temperature`
+  - capteur: `DS18B20`
+  - temperature en `°C`
+  - etat: `Lecture OK` ou `Erreur sonde`
+- Lecture serie conservee.
+- L'ecran se met a jour apres une nouvelle lecture, pas en boucle.
 
-### Cablage DS18B20 valide
+## Phase 1.2a - Diagnostic e-paper
+- DS18B20 OK sur `D5` (`GPIO6`).
+- Avant correction pinMode: écran encore blanc.
+- Compilation OK (diagnostic actif).
+- Correction ajoutée : `pinMode` explicite sur CS/DC/RST/BUSY avant `display.init`.
+- Log corrigé : `Pins e-paper -> CS:44 DC:10 RST:38 BUSY:4`.
+- Inspection GxEPD2 (classes 2.9 trouvées): `GxEPD2_290`, `GxEPD2_290_T5`, `GxEPD2_290_T5D`, `GxEPD2_290_I6FD`, `GxEPD2_290_T94`, `GxEPD2_290_T94_V2`, `GxEPD2_290_BS`, `GxEPD2_290_M06`, `GxEPD2_290_GDEY029T94`, `GxEPD2_290_GDEY029T71H`.
+- Modèle retenu pour ce diagnostic (inchangé): `GxEPD2_290_GDEY029T94`.
+- Diagnostic écran actif:
+  - logs série détaillés de l'initialisation et du rafraichissement,
+  - pattern visuel `TEST EPAPER` + rectangle noir + température si dispo.
+- En cours: `GxEPD2_290_GDEY029T94` et l'écran peut encore rester blanc selon le câblage/pile ou le timing.
+- Pins EE05 v1.11 confirmées pour l'écran:
+  - CS = 44
+  - DC = 10
+  - RST = 38
+  - BUSY = 4
+- Diagnostic driver en cours pour confirmer le bon modèle GxEPD2 2.9".
+- Prochain essai prévu:
+  - `GxEPD2_290_T94` (un seul modèle alternatif à tester ensuite).
 
-- DS18B20 VCC -> 3.3V
-- DS18B20 GND -> GND
-- DS18B20 DATA -> D5
-- Resistance 4.7 kOhm entre DATA et 3.3V
+Note: si `GxEPD2_290_T94` n'existe pas dans `GxEPD2_BW.h`, passer au suivant selon votre version de lib.
 
-### Pin utilisee
+### Cablage DS18B20 (valide)
 
-- Pin capteur: `D5` (`GPIO6`).
-- Note: un test precedent sur `D15` n'a pas detecte la sonde.
-- La correspondance exacte GPIO pour la carte doit rester a verifier plus tard.
+- VCC -> 3.3V
+- GND -> GND
+- DATA -> D5
+- 4.7kOhm entre DATA et 3.3V
 
-### Methode de travail
+### Note sur le DS18B20
 
-Le projet suit une progression par petites phases testables:
+- `D15` n'a pas detecte la sonde dans les essais precedents.
+- Ne jamais utiliser la pin D15 pour le capteur.
+- La correspondance GPIO exacte reste a verifier plus tard si besoin.
+- Le capteur reste obligatoirement sur `D5` pour cette phase.
 
-1. Mettre en place un code minimal de lecture du capteur.
-2. Verifier le cablage et le fonctionnement de base.
-3. Valider en serial la lecture periodique.
-4. Ajouter la prochaine petite fonctionnalite par phase.
+### Configuration e-paper 2.9" (provisoire et ajustable)
+
+Bibliotheques utilisees:
+- `zinggjm/GxEPD2@^1.6.9`
+- `adafruit/Adafruit GFX Library@^1.12.6`
+- `adafruit/Adafruit BusIO@^1.17.4`
+
+Modele d'ecran adapte au code:
+- `GxEPD2_290_GDEY029T94` (monochrome 296x128)
+
+Pins e-paper utilisées dans cette version 1.2:
+- `CS=44`
+- `DC=10`
+- `RST=38`
+- `BUSY=4`
+
+SPI (si forcé):
+- `SCK=13`
+- `MISO=12`
+- `MOSI=11`
+
+Modele utilise dans le projet Boutons Memoire:
+- `GxEPD2_213_GDEY0213B74` (e-paper 2.13")
+
+Ici la difference:
+- meme librairie GxEPD2,
+- modele differents de panneau (2.13" vs 2.9"),
+- ecran et broches d'affichage independantes de la phase 1.1.
+
+### Methodologie (formation)
+
+1. Etre module par fonctionnalite.
+2. Garder le code lisible et court.
+3. Tester chaque phase avant de passer a la suivante.
+4. Utiliser des messages serie clairs pour expliquer chaque etat.
 
 ## Version actuelle
 
-- `0.1.0` - Lecture DS18B20 fonctionnelle sur `D5`.
+- `0.2.0` - Affichage e-paper de la temperature (2.9", 296x128).
 
 ## Historique des versions
 
-- `0.1.0` (Phase 1.1) : Lecture DS18B20 fonctionnelle en serie (5s), module `DS18B20Sensor`, pin `D5`.
+- `0.2.0` - Phase 1.2: affichage local e-paper 2.9" du capteur DS18B20 en plus du serie.
+- `0.1.0` - Phase 1.1: lecture DS18B20 fonctionnelle sur D5.
 
-## A faire (prochaines etapes)
+### Diagnostic e-paper 1.2 (écran croisé)
 
-- Etape suivante: ajouter la logique d'autres phases (selon objectif de formation), sans Wi-Fi, sans ThingsBoard, sans affichage e-paper et sans passerelle pour cette sequence.
+- Compilation OK, DS18B20 OK, écran 2.9" toujours blanc avec `GxEPD2_290_GDEY029T94` après correction des pins et logs.
+- Test temporaire en cours avec `GxEPD2_213_GDEY0213B74` (mêmes broches EE05), pour isoler :
+  - la validite du bus SPI / connecteur EE05,
+  - et un probleme potentiel de modele/driver 2.9".
+- Objectif: confirmer que le matériel EE05 fonctionne avec un écran deja connu (Boutons Memoire), sans changer la logique DS18B20.
+
+## A verifier
+
+- Carte: XIAO ESP32-S3 (ESP32 EE05)
+- No Wi-Fi, pas de ThingsBoard, pas de passerelle, pas d'alerte courriel, pas d'affichage e-paper additionnel.

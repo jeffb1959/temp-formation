@@ -1,5 +1,6 @@
 #include <GxEPD2_BW.h>
 
+#include "DeviceConfig.h"
 #include "LocalDisplay.h"
 
 namespace {
@@ -65,9 +66,9 @@ void LocalDisplay::showReading(float temperatureC, TemperatureStatusCode status)
   char criticalLine[30];
   char dimsLine[24];
   snprintf(warningLine, sizeof(warningLine), "Seuil A: > %.1f C",
-           TemperatureStatus::kWarningThresholdC);
+           DeviceConfig::WARNING_THRESHOLD_C);
   snprintf(criticalLine, sizeof(criticalLine), "Seuil C: > %.1f C",
-           TemperatureStatus::kCriticalThresholdC);
+           DeviceConfig::CRITICAL_THRESHOLD_C);
   snprintf(dimsLine, sizeof(dimsLine), "W/H: %d x %d", display.width(),
            display.height());
 
@@ -77,7 +78,7 @@ void LocalDisplay::showReading(float temperatureC, TemperatureStatusCode status)
     display.setTextColor(GxEPD_BLACK);
     display.setTextSize(2);
     display.setCursor(8, 10);
-    display.print("Prototype temp");
+    display.print(DeviceConfig::DEVICE_NAME);
     display.setCursor(8, 34);
     display.print("T:");
     display.print(tempLine);

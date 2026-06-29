@@ -1,4 +1,5 @@
 #include "TemperatureStatus.h"
+#include "DeviceConfig.h"
 
 TemperatureStatusCode TemperatureStatus::evaluate(float temperatureC,
                                                 bool readingOk) {
@@ -6,10 +7,10 @@ TemperatureStatusCode TemperatureStatus::evaluate(float temperatureC,
     return TemperatureStatusCode::ERREUR_SONDE;
   }
 
-  if (temperatureC > kCriticalThresholdC) {
+  if (temperatureC > DeviceConfig::CRITICAL_THRESHOLD_C) {
     return TemperatureStatusCode::CRITIQUE;
   }
-  if (temperatureC > kWarningThresholdC) {
+  if (temperatureC > DeviceConfig::WARNING_THRESHOLD_C) {
     return TemperatureStatusCode::AVERTISSEMENT;
   }
   return TemperatureStatusCode::NORMAL;

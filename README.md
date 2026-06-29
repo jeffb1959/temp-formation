@@ -1,4 +1,4 @@
-# Projet Formation_temperature
+﻿# Projet Formation_temperature
 
 ## Objectif du projet
 
@@ -104,14 +104,32 @@ Ici la difference:
 
 ## Version actuelle
 
-- `0.4.0` - Structure de télémétrie locale en JSON série.
+- `0.5.0` - Configuration centralisée du module.
 
 ## Historique des versions
 
-- `0.2.0` - Phase 1.2: affichage local e-paper 2.9" du capteur DS18B20 en plus du serie.
-- `0.3.0` - Phase 1.3: ajout logique locale de statut temperature pour test laboratoire.
+- `0.5.0` - Configuration centralisée du module.
 - `0.4.0` - Phase 1.4: structure de télémétrie locale JSON série.
+- `0.3.0` - Phase 1.3: ajout logique locale de statut temperature pour test laboratoire.
+- `0.2.0` - Phase 1.2: affichage local e-paper 2.9" du capteur DS18B20 en plus du serie.
 - `0.1.0` - Phase 1.1: lecture DS18B20 fonctionnelle sur D5.
+
+## Phase 1.5 - Configuration centralisée du module
+
+- Ajout d’un fichier de configuration dédié: [`DeviceConfig.h`](src/DeviceConfig.h), chargé des constantes module:
+  - `DEVICE_ID = "prototype_temp_01"`
+  - `DEVICE_NAME = "Prototype temp"`
+  - `SENSOR_TYPE = "DS18B20"`
+  - `WARNING_THRESHOLD_C = 30.0`
+  - `CRITICAL_THRESHOLD_C = 60.0`
+  - `READING_INTERVAL_MS = 10000`
+  - `READING_INTERVAL_S = 10`
+- Centralisation utile pour préparer un projet multi-équipement plus tard: chaque module peut partager la même architecture logicielle avec une configuration propre (identité, capteur, seuils, cadence).
+- Aucun comportement fonctionnel n’a été changé:
+  - la télémétrie JSON continue d’exposer `device_id`, `device_name`, `sensor_type` et `reading_interval_s`,
+  - la logique `TemperatureStatus` utilise désormais ces constantes,
+  - l’affichage continue de montrer le nom du module, la température et l’état,
+  - la fréquence de lecture reste à 10 secondes.
 
 ## Phase 1.4 - Préparer la télémétrie locale
 
@@ -196,3 +214,4 @@ Ici la difference:
 
 Note: en Phase 1.4, correction de compilation appliquée pour ESP32-S3 USB CDC:
 `TelemetryData::printTelemetryJson` accepte maintenant `Print&` au lieu de `HardwareSerial&`.
+

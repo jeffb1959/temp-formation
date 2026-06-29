@@ -1,4 +1,3 @@
-#include <SPI.h>
 #include <GxEPD2_BW.h>
 
 #include "LocalDisplay.h"
@@ -9,15 +8,9 @@ constexpr uint8_t kEpaperCsPin = 44;   // CS
 constexpr uint8_t kEpaperDcPin = 10;   // DC
 constexpr uint8_t kEpaperRstPin = 38;  // RST
 constexpr uint8_t kEpaperBusyPin = 4;  // BUSY
-constexpr uint8_t kSpiSckPin = 13;     // SCK
-constexpr uint8_t kSpiMisoPin = 12;    // MISO
-constexpr uint8_t kSpiMosiPin = 11;    // MOSI
 
-// Diagnostic temporaire: meme modele que Boutons Memoire
-using DisplayModel = GxEPD2_213_GDEY0213B74;
-constexpr const char* kDisplayModelName =
-    "GxEPD2_213_GDEY0213B74 - test diagnostic avec ecran Boutons Memoire";
-
+// Test diagnostic avec l'ecran du projet Boutons Memoire
+using DisplayModel = GxEPD2_290_GDEY029T94;
 using EpdDisplay = GxEPD2_BW<DisplayModel, DisplayModel::HEIGHT>;
 
 EpdDisplay display(
@@ -27,8 +20,8 @@ bool initialized = false;
 
 bool LocalDisplay::begin() {
   Serial.println("Initialisation e-paper: debut.");
-  Serial.print("Modele GxEPD2 utilise: ");
-  Serial.println(kDisplayModelName);
+  Serial.println(
+      "Modele GxEPD2 utilise: GxEPD2_290_GDEY029T94");
   Serial.print("Pins e-paper -> CS:");
   Serial.print(static_cast<int>(kEpaperCsPin));
   Serial.print(" DC:");
@@ -37,14 +30,7 @@ bool LocalDisplay::begin() {
   Serial.print(static_cast<int>(kEpaperRstPin));
   Serial.print(" BUSY:");
   Serial.println(static_cast<int>(kEpaperBusyPin));
-  pinMode(kEpaperCsPin, OUTPUT);
-  pinMode(kEpaperDcPin, OUTPUT);
-  pinMode(kEpaperRstPin, OUTPUT);
-  pinMode(kEpaperBusyPin, INPUT);
-  digitalWrite(kEpaperCsPin, HIGH);
-  digitalWrite(kEpaperDcPin, HIGH);
-  digitalWrite(kEpaperRstPin, HIGH);
-  SPI.begin(kSpiSckPin, kSpiMisoPin, kSpiMosiPin, kEpaperCsPin);
+
   display.init(115200);
   Serial.print("Largeur e-paper: ");
   Serial.print(display.width());
@@ -52,6 +38,7 @@ bool LocalDisplay::begin() {
   Serial.println(display.height());
   display.setRotation(3);
   Serial.println("Rotation e-paper: 3.");
+  display.setFullWindow();
   initialized = true;
   Serial.println("Initialisation e-paper: OK.");
 
@@ -64,6 +51,7 @@ void LocalDisplay::showReading(float temperatureC, bool readingOk) {
     Serial.println("Affichage saute: e-paper non initialise.");
     return;
   }
+
   Serial.println("Debut rafraichissement e-paper.");
 
   char tempLine[24];
@@ -73,25 +61,24 @@ void LocalDisplay::showReading(float temperatureC, bool readingOk) {
     snprintf(tempLine, sizeof(tempLine), "N/A");
   }
 
-  display.setFullWindow();
+  char dimsLine[24];
+  snprintf(dimsLine, sizeof(dimsLine), "W/H: %d x %d", display.width(),
+           display.height());
+
   display.firstPage();
   do {
-    display.fillScreen(GxEPD_WHITE);
-    display.fillRect(5, 5, display.width() - 10, display.height() - 10,
-                     GxEPD_BLACK);
-    display.setTextColor(GxEPD_WHITE);
-    display.setTextSize(2);
-    display.setCursor(12, 40);
-    display.print("TEST EPAPER");
-
-    display.setTextColor(GxEPD_BLACK);
-    display.setTextSize(2);
-    display.setCursor(8, display.height() - 34);
+  display.fillScreen(GxEPD_WHITE);
+  display.setTextColor(GxEPD_BLACK);
+  display.setTextSize(2);
+  display.setCursor(8, 10);
+  display.print("Temp Module");
+  display.setCursor(8, 34);
+  display.print("ePaper 2.9");
+  display.setCursor(8, 58);
+  display.print(dimsLine);
+  display.setCursor(8, 82);
     display.print("T:");
     display.print(tempLine);
-    display.setCursor(8, display.height() - 16);
-    display.setTextSize(1);
-    display.print(readingOk ? "Lecture OK" : "Erreur sonde");
   } while (display.nextPage());
 
   Serial.println("Fin rafraichissement e-paper.");

@@ -119,6 +119,26 @@ Ici la difference:
   - et un probleme potentiel de modele/driver 2.9".
 - Objectif: confirmer que le matériel EE05 fonctionne avec un écran deja connu (Boutons Memoire), sans changer la logique DS18B20.
 
+## Test 1.2b - Initialisation identique Boutons Mémoire
+
+- Conserve le mode `GxEPD2_213_GDEY0213B74`.
+- Utilise toujours les pins EE05 validées: CS=44, DC=10, RST=38, BUSY=4.
+- Init logicielle alignée sur `DisplayManager.cpp` de Boutons Mémoire:
+  - `display.init(115200);`
+  - `display.setRotation(3);`
+  - `display.setFullWindow();`
+- Suppression temporaire de l'init SPI manuelle pour ce test:
+  - `#include <SPI.h>`
+  - `pinMode(...)`
+  - `digitalWrite(...)`
+  - `SPI.begin(...)`
+- Rendu test simplifié:
+  - `fillScreen(GxEPD_WHITE)`
+  - `setTextColor(GxEPD_BLACK)`
+  - textes `Memoire EE05`, `ePaper OK`, et `W/H`.
+- Succès: affichage texte + température validé sur écran 2.13" avec cette initialisation.
+- Retour au grand écran 2.9": même initialisation Boutons Mémoire (sans `SPI.begin`), modèle changé en `GxEPD2_290_GDEY029T94`.
+
 ## A verifier
 
 - Carte: XIAO ESP32-S3 (ESP32 EE05)

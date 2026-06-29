@@ -4,7 +4,7 @@
 #include "LocalDisplay.h"
 
 constexpr uint8_t kSensorPin = D5;  // D5 / GPIO6
-constexpr unsigned long kReadIntervalMs = 5000;
+constexpr unsigned long kReadIntervalMs = 10000;
 
 DS18B20Sensor temperatureSensor(kSensorPin);
 LocalDisplay localDisplay;

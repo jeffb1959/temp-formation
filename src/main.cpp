@@ -3,9 +3,14 @@
 #include "DS18B20Sensor.h"
 #include "LocalDisplay.h"
 #include "TemperatureStatus.h"
+#include "TelemetryData.h"
 
 constexpr uint8_t kSensorPin = D5;  // D5 / GPIO6
 constexpr unsigned long kReadIntervalMs = 10000;
+constexpr uint16_t kReadIntervalS = 10;
+constexpr const char* kDeviceId = "prototype_temp_01";
+constexpr const char* kDeviceName = "Prototype temp";
+constexpr const char* kSensorType = "DS18B20";
 
 DS18B20Sensor temperatureSensor(kSensorPin);
 TemperatureStatus localStatus;
@@ -61,12 +66,17 @@ void loop() {
       Serial.println(" C");
     } else {
       status = localStatus.evaluate(0.0f, false);
-      Serial.println(
-          "Erreur: sonde non lue (deconnexion, mauvais cablage ou perte de contact).");
+      Serial.println("Erreur: sonde non lue (deconnexion, mauvais cablage ou perte de contact).");
+      temperatureC = 0.0f;
     }
 
     Serial.print("Etat local: ");
     Serial.println(TemperatureStatus::toString(status));
+
+    TelemetryData telemetry{
+        kDeviceId, kDeviceName, kSensorType, temperatureC, status, kReadIntervalS,
+        now};
+    printTelemetryJson(telemetry, Serial);
 
     if (displayReady) {
       localDisplay.showReading(temperatureC, status);

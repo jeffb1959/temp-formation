@@ -104,13 +104,39 @@ Ici la difference:
 
 ## Version actuelle
 
-- `0.3.0` - Etat local de temperature (NORMAL/AVERTISSEMENT/CRITIQUE/ERREUR_SONDE) affiche sur e-paper.
+- `0.4.0` - Structure de télémétrie locale en JSON série.
 
 ## Historique des versions
 
 - `0.2.0` - Phase 1.2: affichage local e-paper 2.9" du capteur DS18B20 en plus du serie.
 - `0.3.0` - Phase 1.3: ajout logique locale de statut temperature pour test laboratoire.
+- `0.4.0` - Phase 1.4: structure de télémétrie locale JSON série.
 - `0.1.0` - Phase 1.1: lecture DS18B20 fonctionnelle sur D5.
+
+## Phase 1.4 - Préparer la télémétrie locale
+
+- Ajout du module `TelemetryData` (`TelemetryData.h`, `TelemetryData.cpp`) pour préparer les données utiles à un futur envoi vers passerelle/ThingsBoard.
+- Une ligne JSON est maintenant affichée dans le moniteur série à chaque lecture, pour test local.
+- Structure prévue réutilisable plus tard (MQTT/HTTP/ESP-NOW):
+  - `device_id`
+  - `device_name`
+  - `sensor_type`
+  - `temperature_c`
+  - `local_status`
+  - `reading_interval_s`
+  - `timestamp_ms`
+- Valeurs temporaires utilisées:
+  - `device_id = "prototype_temp_01"`
+  - `device_name = "Prototype temp"`
+  - `sensor_type = "DS18B20"`
+  - `reading_interval_s = 10`
+- Les seuils restent les mêmes que la phase 1.3 (30/60 pour labo).
+- Rappel:
+  - pas de Wi-Fi,
+  - pas de ThingsBoard,
+  - pas d'e-mail,
+  - pas de passerelle pour l’instant.
+- Phase 1.4 garde `kReadIntervalMs = 10000` (10 secondes) et prépare l'évolution sans changer la logique actuelle de capteur/affichage.
 
 ### Diagnostic e-paper 1.2 (écran croisé)
 
@@ -167,3 +193,6 @@ Ici la difference:
 
 - Carte: XIAO ESP32-S3 (ESP32 EE05)
 - No Wi-Fi, pas de ThingsBoard, pas de passerelle, pas d'alerte courriel, pas d'affichage e-paper additionnel.
+
+Note: en Phase 1.4, correction de compilation appliquée pour ESP32-S3 USB CDC:
+`TelemetryData::printTelemetryJson` accepte maintenant `Print&` au lieu de `HardwareSerial&`.

@@ -13,6 +13,8 @@ struct TelemetryData {
   uint16_t reading_interval_s;
   bool wifi_connected;
   int wifi_rssi_dbm;
+  bool mqtt_connected;
+  bool mqtt_publish_ok;
   unsigned long timestamp_ms;
 };
 

@@ -7,3 +7,4 @@
 .vscode/ipch
 compile_commands.json
 include/wifi_secrets.h
+include/thingsboard_secrets.h

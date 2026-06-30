@@ -3,6 +3,7 @@
 #include "DeviceConfig.h"
 #include "DS18B20Sensor.h"
 #include "LocalDisplay.h"
+#include "ThingsBoardClient.h"
 #include "WifiManager.h"
 #include "TemperatureStatus.h"
 #include "TelemetryData.h"
@@ -12,11 +13,14 @@ constexpr uint8_t kSensorPin = D5;  // D5 / GPIO6
 
 DS18B20Sensor temperatureSensor(kSensorPin);
 WifiManager wifiManager;
+ThingsBoardClient thingsBoardClient;
 TemperatureStatus localStatus;
 LocalDisplay localDisplay;
 bool sensorFound = false;
 bool displayReady = false;
 bool wifiConnected = false;
+bool mqttConnected = false;
+bool mqttPublishOk = false;
 unsigned long lastReadMs = 0;
 
 void setup() {
@@ -50,13 +54,18 @@ void setup() {
   if (wifiConnected) {
     Serial.print("RSSI Wi-Fi (dBm): ");
     Serial.println(wifiManager.getRssiDbm());
+    mqttConnected = thingsBoardClient.connect();
+    Serial.print("Connexion MQTT initiale: ");
+    Serial.println(mqttConnected ? "OK" : "Non connecte");
   } else {
     Serial.println("Module sans connexion Wi-Fi pour le moment.");
+    mqttConnected = false;
   }
 }
 
 void loop() {
   unsigned long now = millis();
+  thingsBoardClient.loop();
 
   if (!sensorFound) {
     return;
@@ -65,6 +74,11 @@ void loop() {
   if (now - lastReadMs >= DeviceConfig::READING_INTERVAL_MS) {
     lastReadMs = now;
     wifiConnected = wifiManager.isConnected();
+    if (wifiConnected) {
+      mqttConnected = thingsBoardClient.connect();
+    } else {
+      mqttConnected = false;
+    }
 
     float temperatureC = 0.0f;
     TemperatureStatusCode status;
@@ -82,14 +96,27 @@ void loop() {
     Serial.print("Etat local: ");
     Serial.println(TemperatureStatus::toString(status));
 
+    mqttPublishOk = false;
+    const int wifiRssi = wifiConnected ? wifiManager.getRssiDbm() : 0;
     TelemetryData telemetry{
-        DeviceConfig::DEVICE_ID, DeviceConfig::DEVICE_NAME, DeviceConfig::SENSOR_TYPE,
-        temperatureC, status, DeviceConfig::READING_INTERVAL_S, wifiConnected,
-        wifiConnected ? wifiManager.getRssiDbm() : 0, now};
+        DeviceConfig::DEVICE_ID, DeviceConfig::DEVICE_NAME,
+        DeviceConfig::SENSOR_TYPE, temperatureC, status,
+        DeviceConfig::READING_INTERVAL_S, wifiConnected, wifiRssi, mqttConnected,
+        false, now};
+
+    if (wifiConnected) {
+      if (mqttConnected) {
+        mqttPublishOk = thingsBoardClient.publishTelemetry(telemetry);
+        telemetry.mqtt_publish_ok = mqttPublishOk;
+        Serial.println(mqttPublishOk ? "MQTT publish OK" : "MQTT publish ECHEC");
+      } else {
+        Serial.println("MQTT publish ECHEC");
+      }
+    }
     printTelemetryJson(telemetry, Serial);
 
     if (displayReady) {
-      localDisplay.showReading(temperatureC, status, wifiConnected);
+      localDisplay.showReading(temperatureC, status, wifiConnected, mqttConnected);
     }
   }
 }

@@ -30,6 +30,12 @@ void printTelemetryJson(const TelemetryData& data, Print& output) {
     output.print("null");
   }
   output.print(",");
+  output.print("\"mqtt_connected\":");
+  output.print(data.mqtt_connected ? "true" : "false");
+  output.print(",");
+  output.print("\"mqtt_publish_ok\":");
+  output.print(data.mqtt_publish_ok ? "true" : "false");
+  output.print(",");
   output.print("\"timestamp_ms\":");
   output.print(data.timestamp_ms);
   output.println('}');

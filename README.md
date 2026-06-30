@@ -104,10 +104,11 @@ Ici la difference:
 
 ## Version actuelle
 
-- `0.6.0` - Connexion Wi-Fi locale du module.
+- `0.7.0` - Envoi MQTT vers ThingsBoard.
 
 ## Historique des versions
 
+- `0.7.0` - Envoi MQTT vers ThingsBoard.
 - `0.6.0` - Connexion Wi-Fi locale du module.
 - `0.5.0` - Configuration centralisée du module.
 - `0.4.0` - Phase 1.4: structure de télémétrie locale JSON série.
@@ -158,6 +159,32 @@ Ici la difference:
   - le Wi-Fi est en 2.4 GHz; certains routeurs avec SSID combiné 2.4/5 GHz peuvent rendre la liaison instable.
 - Test recommandé:
   - créer un hotspot 2.4 GHz avec un SSID simple, visible, et tester la connexion sur ce réseau.
+
+## Phase 2.2 - Envoi de télémétrie MQTT vers ThingsBoard
+
+- Ajout d'un module dédié: `ThingsBoardClient` (`src/ThingsBoardClient.h`, `src/ThingsBoardClient.cpp`).
+- Référence MQTT ThingsBoard:
+  - host: `mqtt.thingsboard.cloud`
+  - port: `1883`
+  - topic: `v1/devices/me/telemetry`
+- L'authentification MQTT utilise le token du device ThingsBoard comme username.
+- Rappel sécurité: si un token apparait dans une capture d’écran ou sur GitHub, il doit être régénéré immédiatement.
+- Le client MQTT utilise `WiFiClient` et `PubSubClient`.
+- Connexion MQTT:
+  - tentée seulement si le Wi-Fi est connecté,
+  - logs de début, host/port, succès, échec avec code d’état PubSubClient.
+- Authentification MQTT:
+  - `THINGSBOARD_ACCESS_TOKEN` est utilisé comme username,
+  - password vide.
+- Credentials locale:
+  - `include/thingsboard_secrets.h`
+  - version d'exemple: `include/thingsboard_secrets.example.h`
+- `thingsboard_secrets.h` reste local et doit être ignoré par Git (`.gitignore`).
+- Télémétrie locale JSON ajoutée:
+  - `mqtt_connected`
+  - `mqtt_publish_ok`
+- Le JSON envoyé à ThingsBoard reste simple et n'inclut jamais de token ni de mot de passe Wi-Fi.
+- Cette étape envoie uniquement de la télémétrie: pas d'alarmes ThingsBoard, pas de courriel, pas de logique avancée.
 
 ## Phase 1.5 - Configuration centralisée du module
 

@@ -104,15 +104,60 @@ Ici la difference:
 
 ## Version actuelle
 
-- `0.5.0` - Configuration centralisée du module.
+- `0.6.0` - Connexion Wi-Fi locale du module.
 
 ## Historique des versions
 
+- `0.6.0` - Connexion Wi-Fi locale du module.
 - `0.5.0` - Configuration centralisée du module.
 - `0.4.0` - Phase 1.4: structure de télémétrie locale JSON série.
 - `0.3.0` - Phase 1.3: ajout logique locale de statut temperature pour test laboratoire.
 - `0.2.0` - Phase 1.2: affichage local e-paper 2.9" du capteur DS18B20 en plus du serie.
 - `0.1.0` - Phase 1.1: lecture DS18B20 fonctionnelle sur D5.
+
+## Phase 2.0 - Connexion Wi-Fi locale du module
+
+- Ajout d'un module dédié: `WifiManager` (`src/WifiManager.h`, `src/WifiManager.cpp`).
+- Le module initialise la connexion Wi-Fi, affiche les logs de:
+  - démarrage connexion,
+  - SSID utilisé (sans mot de passe),
+  - succès connexion,
+  - adresse IP reçue,
+  - échec si la connexion ne s'établit pas dans un délai raisonnable.
+- Nouveau fichier local:
+  - [`include/wifi_secrets.h`](include/wifi_secrets.h) (`WIFI_SSID`, `WIFI_PASSWORD`)
+  - version d'exemple: [`include/wifi_secrets.example.h`](include/wifi_secrets.example.h)
+- `wifi_secrets.h` contient des credentials locales de développement et **ne doit pas être poussé sur GitHub** (`.gitignore`).
+- Architecture validée pour la suite:
+  - `ESP32 -> Wi-Fi -> ThingsBoard` (sans passerelle à ce stade).
+- La passerelle a été écartée pour garder une architecture directe et simple vers ThingsBoard.
+- La lecture capteur/affichage e-paper/télémétrie locale reste inchangée (10 s entre lectures).
+- La télémétrie JSON ajoute un statut réseau lisible:
+  - `wifi_connected`
+  - `wifi_rssi_dbm` (si connecté).
+- L'écran e-paper affiche un indicateur court:
+  - `WiFi OK` ou `WiFi NOK`.
+
+## Phase 2.0a - Diagnostic Wi-Fi
+
+- Ajout d'un diagnostic de connexion Wi-Fi pour faciliter le dépannage.
+- Au démarrage, le module effectue un scan et affiche:
+  - le nombre de réseaux détectés,
+  - pour chaque réseau: SSID, RSSI, canal, type d'authentification.
+- Le code loggue désormais:
+  - `Duree max de connexion (ms)`,
+  - un point à chaque tentative,
+  - `WiFi.status()` (valeur + texte: `WL_CONNECTED`, `WL_NO_SSID_AVAIL`, `WL_CONNECT_FAILED`, `WL_CONNECTION_LOST`, `WL_DISCONNECTED`, `WL_UNKNOWN`),
+  - l'adresse IP quand connecté,
+  - le RSSI quand connecté.
+- Si le SSID est introuvable au scan:
+  - `SSID non trouve. Verifier que le reseau est en 2.4 GHz et visible.`
+- Si le SSID est trouvé mais la connexion échoue:
+  - `SSID trouve mais connexion echouee. Verifier mot de passe, securite WPA et compatibilite 2.4 GHz.`
+- Rappel important ESP32:
+  - le Wi-Fi est en 2.4 GHz; certains routeurs avec SSID combiné 2.4/5 GHz peuvent rendre la liaison instable.
+- Test recommandé:
+  - créer un hotspot 2.4 GHz avec un SSID simple, visible, et tester la connexion sur ce réseau.
 
 ## Phase 1.5 - Configuration centralisée du module
 

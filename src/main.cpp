@@ -3,16 +3,20 @@
 #include "DeviceConfig.h"
 #include "DS18B20Sensor.h"
 #include "LocalDisplay.h"
+#include "WifiManager.h"
 #include "TemperatureStatus.h"
 #include "TelemetryData.h"
+#include "wifi_secrets.h"
 
 constexpr uint8_t kSensorPin = D5;  // D5 / GPIO6
 
 DS18B20Sensor temperatureSensor(kSensorPin);
+WifiManager wifiManager;
 TemperatureStatus localStatus;
 LocalDisplay localDisplay;
 bool sensorFound = false;
 bool displayReady = false;
+bool wifiConnected = false;
 unsigned long lastReadMs = 0;
 
 void setup() {
@@ -41,6 +45,14 @@ void setup() {
   } else {
     Serial.println("Ecran e-paper pret.");
   }
+
+  wifiConnected = wifiManager.connect(WIFI_SSID, WIFI_PASSWORD);
+  if (wifiConnected) {
+    Serial.print("RSSI Wi-Fi (dBm): ");
+    Serial.println(wifiManager.getRssiDbm());
+  } else {
+    Serial.println("Module sans connexion Wi-Fi pour le moment.");
+  }
 }
 
 void loop() {
@@ -52,6 +64,7 @@ void loop() {
 
   if (now - lastReadMs >= DeviceConfig::READING_INTERVAL_MS) {
     lastReadMs = now;
+    wifiConnected = wifiManager.isConnected();
 
     float temperatureC = 0.0f;
     TemperatureStatusCode status;
@@ -71,11 +84,12 @@ void loop() {
 
     TelemetryData telemetry{
         DeviceConfig::DEVICE_ID, DeviceConfig::DEVICE_NAME, DeviceConfig::SENSOR_TYPE,
-        temperatureC, status, DeviceConfig::READING_INTERVAL_S, now};
+        temperatureC, status, DeviceConfig::READING_INTERVAL_S, wifiConnected,
+        wifiConnected ? wifiManager.getRssiDbm() : 0, now};
     printTelemetryJson(telemetry, Serial);
 
     if (displayReady) {
-      localDisplay.showReading(temperatureC, status);
+      localDisplay.showReading(temperatureC, status, wifiConnected);
     }
   }
 }

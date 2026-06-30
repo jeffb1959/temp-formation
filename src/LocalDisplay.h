@@ -6,5 +6,5 @@
 class LocalDisplay {
 public:
   bool begin();
-  void showReading(float temperatureC, TemperatureStatusCode status);
+  void showReading(float temperatureC, TemperatureStatusCode status, bool wifiConnected);
 };

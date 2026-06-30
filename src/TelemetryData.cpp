@@ -20,6 +20,16 @@ void printTelemetryJson(const TelemetryData& data, Print& output) {
   output.print("\"reading_interval_s\":");
   output.print(data.reading_interval_s);
   output.print(",");
+  output.print("\"wifi_connected\":");
+  output.print(data.wifi_connected ? "true" : "false");
+  output.print(",");
+  output.print("\"wifi_rssi_dbm\":");
+  if (data.wifi_connected) {
+    output.print(data.wifi_rssi_dbm);
+  } else {
+    output.print("null");
+  }
+  output.print(",");
   output.print("\"timestamp_ms\":");
   output.print(data.timestamp_ms);
   output.println('}');

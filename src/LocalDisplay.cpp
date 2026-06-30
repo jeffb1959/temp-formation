@@ -41,11 +41,12 @@ bool LocalDisplay::begin() {
   initialized = true;
   Serial.println("Initialisation e-paper: OK.");
 
-  showReading(0.0f, TemperatureStatusCode::ERREUR_SONDE);
+  showReading(0.0f, TemperatureStatusCode::ERREUR_SONDE, false);
   return initialized;
 }
 
-void LocalDisplay::showReading(float temperatureC, TemperatureStatusCode status) {
+void LocalDisplay::showReading(float temperatureC, TemperatureStatusCode status,
+                              bool wifiConnected) {
   if (!initialized) {
     Serial.println("Affichage saute: e-paper non initialise.");
     return;
@@ -61,16 +62,16 @@ void LocalDisplay::showReading(float temperatureC, TemperatureStatusCode status)
   }
 
   const char* statusText = TemperatureStatus::toString(status);
+  const char* wifiText = wifiConnected ? "WiFi OK" : "WiFi NOK";
 
   char warningLine[30];
   char criticalLine[30];
-  char dimsLine[24];
+  char wifiLine[16];
   snprintf(warningLine, sizeof(warningLine), "Seuil A: > %.1f C",
            DeviceConfig::WARNING_THRESHOLD_C);
   snprintf(criticalLine, sizeof(criticalLine), "Seuil C: > %.1f C",
            DeviceConfig::CRITICAL_THRESHOLD_C);
-  snprintf(dimsLine, sizeof(dimsLine), "W/H: %d x %d", display.width(),
-           display.height());
+  snprintf(wifiLine, sizeof(wifiLine), "%s", wifiText);
 
   display.firstPage();
   do {
@@ -91,7 +92,7 @@ void LocalDisplay::showReading(float temperatureC, TemperatureStatusCode status)
     display.setCursor(8, 100);
     display.print(criticalLine);
     display.setCursor(8, 116);
-    display.print(dimsLine);
+    display.print(wifiLine);
   } while (display.nextPage());
 
   Serial.println("Fin rafraichissement e-paper.");

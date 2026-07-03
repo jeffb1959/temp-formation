@@ -39,7 +39,7 @@ inline constexpr float CRITICAL_THRESHOLD_C = 60.0f;
 // - Intervalle entre deux lectures, en secondes.
 // - Cette valeur est simple a lire/modifier en formation.
 // - Exemple: 10 = une lecture toutes les 10 secondes.
-inline constexpr uint16_t READING_INTERVAL_S = 10;
+inline constexpr uint16_t READING_INTERVAL_S = 60;
 
 // READING_INTERVAL_MS:
 // - Meme intervalle, converti en millisecondes pour le programme.

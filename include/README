@@ -35,3 +35,45 @@ Read more about using header files in official GCC documentation:
 * Computed Includes
 
 https://gcc.gnu.org/onlinedocs/cpp/Header-Files.html
+Phase 2.3 - Dashboard laboratoire ThingsBoard
+
+Objectif:
+Créer un dashboard simple pour valider visuellement la télémétrie envoyée par l’ESP32.
+
+Widgets créés:
+- Température actuelle: temperature_c
+- Etat local: local_status
+- Signal Wi-Fi: wifi_rssi_dbm
+- Historique température: temperature_c en time series
+
+Le dashboard sert uniquement à la visualisation.
+Les alarmes, courriels et règles ThingsBoard seront configurés dans une phase suivante.Phase 2.3 - Dashboard laboratoire ThingsBoard
+
+Objectif:
+Créer un dashboard simple pour valider visuellement la télémétrie envoyée par l’ESP32.
+
+Widgets créés:
+- Température actuelle: temperature_c
+- Etat local: local_status
+- Signal Wi-Fi: wifi_rssi_dbm
+- Historique température: temperature_c en time series
+
+Le dashboard sert uniquement à la visualisation.
+Les alarmes, courriels et règles ThingsBoard seront configurés dans une phase suivante.
+
+0.9.0 - Alarmes laboratoire ThingsBoard stables
+
+Alarmes créées:
+- Laboratory temperature warning
+  - severity: WARNING
+  - trigger: temperature_c > 30
+  - clear: temperature_c <= 30
+
+- Laboratory temperature critical
+  - severity: CRITICAL
+  - trigger: temperature_c > 60
+  - clear: temperature_c <= 60
+
+Les seuils 30 C et 60 C sont temporaires pour tests laboratoire.
+Aucun courriel, relais ou contrôle de porte n’est encore configuré.
+
